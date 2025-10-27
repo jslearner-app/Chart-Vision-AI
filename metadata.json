@@ -1,0 +1,5 @@
+{
+  "name": "Chart Vision AI",
+  "description": "An AI-powered web application that analyzes trading chart screenshots. Upload an image of a chart to detect candlestick patterns, market context, support/resistance zones, and overall sentiment using Google's Gemini API.",
+  "requestFramePermissions": []
+}
