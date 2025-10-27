@@ -71,6 +71,11 @@ export const analyzeChart = async (base64Image: string, mimeType: string): Promi
     throw new Error("API_KEY is not configured. Please ensure it's set up in your Vercel deployment environment variables.");
   }
 
+  // Add a check to validate the key format. A common mistake is using the Project ID.
+  if (!API_KEY.startsWith('AIzaSy')) {
+    throw new Error(`The configured API_KEY appears to be invalid. It should be a long string starting with 'AIzaSy...'. You may have used your Project ID by mistake. Please double-check the value in your deployment settings.`);
+  }
+
   const ai = new GoogleGenAI({ apiKey: API_KEY });
 
   try {
@@ -114,6 +119,7 @@ export const analyzeChart = async (base64Image: string, mimeType: string): Promi
     if (error instanceof Error && error.message.includes('429')) {
       throw new Error('API rate limit exceeded. Please try again later.');
     }
-    throw new Error('Failed to get a valid analysis from the AI model.');
+    // Pass the original error message if it exists, otherwise use a generic one.
+    throw new Error(error instanceof Error ? error.message : 'Failed to get a valid analysis from the AI model.');
   }
 };
