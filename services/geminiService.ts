@@ -1,14 +1,5 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import type { AnalysisResult } from '../types';
-
-const API_KEY = process.env.API_KEY;
-
-if (!API_KEY) {
-  throw new Error("API_KEY environment variable is not set");
-}
-
-const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 const analysisSchema = {
   type: Type.OBJECT,
@@ -74,6 +65,14 @@ Based on the image, provide the following:
 4.  **momentumSentiment**: Based on recent candle body sizes, wick lengths, and sequence, describe whether momentum is strengthening or fading. Provide a final, overall sentiment summary: 'Bullish', 'Bearish', 'Neutral', or 'Reversal Likely'.`;
 
 export const analyzeChart = async (base64Image: string, mimeType: string): Promise<AnalysisResult> => {
+  const API_KEY = process.env.API_KEY;
+
+  if (!API_KEY) {
+    throw new Error("API_KEY is not configured. Please ensure it's set up in your Vercel deployment environment variables.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey: API_KEY });
+
   try {
     const imagePart = {
       inlineData: {
