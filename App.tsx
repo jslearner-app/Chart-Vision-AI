@@ -8,7 +8,7 @@ import { analyzeChart } from './services/geminiService';
 import { fileToBase64 } from './utils/fileUtils';
 import type { AnalysisResult } from './types';
 
-export default function App() {
+export default function App(): React.ReactElement {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);

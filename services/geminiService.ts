@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import type { AnalysisResult } from '../types';
 
@@ -18,12 +17,10 @@ const analysisSchema = {
           sentiment: {
             type: Type.STRING,
             description: "Sentiment of the pattern.",
-            enum: ['bullish', 'bearish', 'neutral']
           },
           confidence: {
             type: Type.STRING,
             description: "Confidence level in the pattern detection.",
-            enum: ['High', 'Medium', 'Low']
           },
         },
          required: ["name", "sentiment", "confidence"]
@@ -47,7 +44,6 @@ const analysisSchema = {
         summary: {
           type: Type.STRING,
           description: "A final, overall sentiment summary.",
-          enum: ['Bullish', 'Bearish', 'Neutral', 'Reversal Likely']
         }
       },
       required: ["description", "summary"]
@@ -66,8 +62,9 @@ Based on the image, provide the following:
 4.  **momentumSentiment**: Based on recent candle body sizes, wick lengths, and sequence, describe whether momentum is strengthening or fading. Provide a final, overall sentiment summary: 'Bullish', 'Bearish', 'Neutral', or 'Reversal Likely'.`;
 
 export const analyzeChart = async (base64Image: string, mimeType: string): Promise<AnalysisResult> => {
-  // Initialize with the API key from the environment.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // Initialize the client. The SDK will automatically find the API key from the environment.
+  // FIX: Initialize the GoogleGenAI client with the API key from environment variables as per the guidelines.
+  const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
 
   try {
     const imagePart = {

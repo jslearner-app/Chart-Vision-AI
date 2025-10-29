@@ -5,7 +5,7 @@ interface SpinnerProps {
   className?: string;
 }
 
-export const Spinner: React.FC<SpinnerProps> = ({ className = 'w-5 h-5' }) => {
+export const Spinner = ({ className = 'w-5 h-5' }: SpinnerProps): React.ReactElement => {
   return (
     <svg
       className={`animate-spin ${className} text-white`}
