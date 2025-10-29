@@ -4,7 +4,7 @@ import type { AnalysisResult } from '../types';
 
 // IMPORTANT: Add your Google AI API key here.
 // To get your own API key, visit https://makersuite.google.com/app/apikey
-const API_KEY = "YOUR_API_KEY";
+const API_KEY = "AIzaSyC_JGlk00xlRD7BJjb1ltnT78EFg3lz4Yc";
 
 const analysisSchema = {
   type: Type.OBJECT,
