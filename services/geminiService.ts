@@ -65,18 +65,7 @@ Based on the image, provide the following:
 4.  **momentumSentiment**: Based on recent candle body sizes, wick lengths, and sequence, describe whether momentum is strengthening or fading. Provide a final, overall sentiment summary: 'Bullish', 'Bearish', 'Neutral', or 'Reversal Likely'.`;
 
 export const analyzeChart = async (base64Image: string, mimeType: string): Promise<AnalysisResult> => {
-  const API_KEY = process.env.API_KEY;
-
-  if (!API_KEY) {
-    throw new Error("API_KEY is not configured. Please ensure it's set up in your Vercel deployment environment variables.");
-  }
-
-  // Add a check to validate the key format. A common mistake is using the Project ID.
-  if (!API_KEY.startsWith('AIzaSy')) {
-    throw new Error(`The configured API_KEY appears to be invalid. It should be a long string starting with 'AIzaSy...'. You may have used your Project ID by mistake. Please double-check the value in your deployment settings.`);
-  }
-
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   try {
     const imagePart = {
