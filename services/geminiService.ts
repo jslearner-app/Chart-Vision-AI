@@ -1,10 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { AnalysisResult } from '../types';
 
-// IMPORTANT: REPLACE "YOUR_API_KEY" WITH YOUR ACTUAL GOOGLE AI API KEY
-const API_KEY = "AIzaSyC_JGlk00xlRD7BJjb1ltnT78EFg3lz4Yc";
-
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+// FIX: Initialize the GoogleGenAI client using the API key from environment variables.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const analysisSchema = {
   type: Type.OBJECT,
@@ -67,10 +65,8 @@ Based on the image, provide the following:
 4.  **momentumSentiment**: Based on recent candle body sizes, wick lengths, and sequence, describe whether momentum is strengthening or fading. Provide a final, overall sentiment summary: 'Bullish', 'Bearish', 'Neutral', or 'Reversal Likely'.`;
 
 export const analyzeChart = async (base64Image: string, mimeType: string): Promise<AnalysisResult> => {
-  if (API_KEY === "YOUR_API_KEY") {
-    throw new Error("Please replace 'YOUR_API_KEY' in services/geminiService.ts with your actual Google AI API key.");
-  }
-
+  // FIX: Removed the API key check that was causing a compile-time error.
+  // The API key is now correctly sourced from environment variables.
   try {
     const imagePart = {
       inlineData: {

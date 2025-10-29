@@ -116,7 +116,7 @@ export default function App(): React.ReactElement {
         </div>
 
         <footer className="text-center mt-12 text-sm text-slate-500">
-          <p>&copy; {new Date().getFullYear()} Chart Vision AI. Built with React & Google Gemini.</p>
+          <p>&copy; 2025 Lanre&sup2;. All Rights Reserved. Built with Love</p>
         </footer>
       </main>
     </div>
