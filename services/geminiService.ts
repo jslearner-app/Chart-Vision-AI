@@ -62,8 +62,8 @@ Based on the image, provide the following:
 4.  **momentumSentiment**: Based on recent candle body sizes, wick lengths, and sequence, describe whether momentum is strengthening or fading. Provide a final, overall sentiment summary: 'Bullish', 'Bearish', 'Neutral', or 'Reversal Likely'.`;
 
 export const analyzeChart = async (base64Image: string, mimeType: string): Promise<AnalysisResult> => {
-  // FIX: Per coding guidelines, API key must come from `process.env.API_KEY`
-  // and we should not hard-code it or check for a placeholder value.
+  // This initializes the client using the API key provided by the Google AI Studio environment.
+  // You do not need to add the key to the code yourself. The platform provides it.
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   try {
