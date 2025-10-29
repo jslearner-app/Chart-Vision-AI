@@ -16,3 +16,9 @@ export interface AnalysisResult {
   supportResistance: string;
   momentumSentiment: MomentumSentiment;
 }
+
+// FIX: Moved AIStudio interface here to resolve a TypeScript error about duplicate declarations.
+export interface AIStudio {
+  hasSelectedApiKey: () => Promise<boolean>;
+  openSelectKey: () => Promise<void>;
+}
