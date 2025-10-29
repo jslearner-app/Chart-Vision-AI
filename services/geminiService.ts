@@ -2,6 +2,11 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { AnalysisResult } from '../types';
 
+// --- PASTE YOUR API KEY HERE ---
+// Replace 'YOUR_API_KEY' with your actual Google AI API key.
+const API_KEY = "AIzaSyC_JGlk00xlRD7BJjb1ltnT78EFg3lz4Yc";
+// -----------------------------
+
 const analysisSchema = {
   type: Type.OBJECT,
   properties: {
@@ -63,9 +68,11 @@ Based on the image, provide the following:
 4.  **momentumSentiment**: Based on recent candle body sizes, wick lengths, and sequence, describe whether momentum is strengthening or fading. Provide a final, overall sentiment summary: 'Bullish', 'Bearish', 'Neutral', or 'Reversal Likely'.`;
 
 export const analyzeChart = async (base64Image: string, mimeType: string): Promise<AnalysisResult> => {
-  // IMPORTANT: The client is initialized here, just before the call.
-  // This ensures it uses the API key selected by the user in the UI flow.
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  if (API_KEY === 'YOUR_API_KEY') {
+    throw new Error("Please replace 'YOUR_API_KEY' in services/geminiService.ts with your actual Google AI API key.");
+  }
+
+  const ai = new GoogleGenAI({ apiKey: API_KEY });
 
   try {
     const imagePart = {

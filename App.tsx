@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ImageUploader } from './components/ImageUploader';
 import { AnalysisDisplay } from './components/AnalysisDisplay';
 import { Spinner } from './components/Spinner';
@@ -7,44 +7,12 @@ import { analyzeChart } from './services/geminiService';
 import { fileToBase64 } from './utils/fileUtils';
 import type { AnalysisResult } from './types';
 
-// FIX: Removed global 'aistudio' declaration and type import. This is now handled in types.ts to avoid declaration conflicts.
 export default function App(): React.ReactElement {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasApiKey, setHasApiKey] = useState(false);
-  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const checkApiKey = async () => {
-      try {
-        if (window.aistudio && await window.aistudio.hasSelectedApiKey()) {
-          setHasApiKey(true);
-        }
-      } catch (e) {
-        console.error("Could not check for API key", e);
-        setApiKeyError("API key selection is not available in this environment.");
-      }
-    };
-    checkApiKey();
-  }, []);
-
-  const handleSelectKey = async () => {
-    try {
-      if (window.aistudio) {
-        await window.aistudio.openSelectKey();
-        // Assume success and update the state to show the main app
-        setHasApiKey(true);
-        setApiKeyError(null);
-      }
-    } catch (e) {
-        console.error("Could not open API key selection", e);
-        setApiKeyError("Failed to open the API key selection dialog.");
-    }
-  };
-
 
   const handleImageUpload = useCallback((file: File) => {
     setImageFile(file);
@@ -68,14 +36,7 @@ export default function App(): React.ReactElement {
     } catch (err) {
       console.error(err);
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred during analysis.';
-      
-      // Check for the specific error message indicating an invalid API key
-      if (errorMessage.includes('API Key must be set') || errorMessage.includes('Requested entity was not found')) {
-        setError('Your API key is invalid or missing. Please select a valid key.');
-        setHasApiKey(false); // Go back to the key selection screen
-      } else {
-        setError(errorMessage);
-      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -88,35 +49,6 @@ export default function App(): React.ReactElement {
     setError(null);
     setIsLoading(false);
   };
-  
-  if (!hasApiKey) {
-    return (
-      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-        <header className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">
-            Chart Vision <span className="text-emerald-500">AI</span>
-          </h1>
-          <p className="mt-2 text-lg text-slate-600 max-w-2xl mx-auto">
-            Upload a trading chart screenshot and let AI provide a detailed technical analysis in seconds.
-          </p>
-        </header>
-        <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
-            <Icon name="key" className="w-16 h-16 mx-auto text-slate-400 mb-4" />
-            <h2 className="text-2xl font-bold text-slate-800 mb-2">API Key Required</h2>
-            {apiKeyError && <p className="text-red-500 mb-4">{apiKeyError}</p>}
-            <p className="text-slate-600 mb-6">
-                To use Chart Vision AI, please select a Google AI API key. Your key is stored securely and only used for your session. For more details, see the <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline">billing documentation</a>.
-            </p>
-            <button
-                onClick={handleSelectKey}
-                className="w-full bg-emerald-500 text-white font-semibold py-3 px-6 rounded-xl shadow-md hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300"
-            >
-                Select API Key
-            </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-800 antialiased">
