@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import type { AnalysisResult } from '../types';
 
@@ -62,8 +63,8 @@ Based on the image, provide the following:
 4.  **momentumSentiment**: Based on recent candle body sizes, wick lengths, and sequence, describe whether momentum is strengthening or fading. Provide a final, overall sentiment summary: 'Bullish', 'Bearish', 'Neutral', or 'Reversal Likely'.`;
 
 export const analyzeChart = async (base64Image: string, mimeType: string): Promise<AnalysisResult> => {
-  // This initializes the client using the API key provided by the Google AI Studio environment.
-  // You do not need to add the key to the code yourself. The platform provides it.
+  // IMPORTANT: The client is initialized here, just before the call.
+  // This ensures it uses the API key selected by the user in the UI flow.
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   try {
