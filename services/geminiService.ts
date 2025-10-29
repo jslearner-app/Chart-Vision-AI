@@ -63,8 +63,7 @@ Based on the image, provide the following:
 
 export const analyzeChart = async (base64Image: string, mimeType: string): Promise<AnalysisResult> => {
   // Initialize the client. The SDK will automatically find the API key from the environment.
-  // FIX: Initialize the GoogleGenAI client with the API key from environment variables as per the guidelines.
-  const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
+  const ai = new GoogleGenAI({});
 
   try {
     const imagePart = {
