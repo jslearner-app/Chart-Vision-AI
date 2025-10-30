@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ImageUploader } from './components/ImageUploader';
 import { AnalysisDisplay } from './components/AnalysisDisplay';
 import { Spinner } from './components/Spinner';
@@ -13,31 +13,6 @@ export default function App(): React.ReactElement {
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  
-  const [apiKey, setApiKey] = useState<string>('');
-  const [tempApiKey, setTempApiKey] = useState<string>('');
-  const [isKeyLoading, setIsKeyLoading] = useState<boolean>(true);
-
-
-  useEffect(() => {
-    const savedKey = localStorage.getItem('gemini-api-key');
-    if (savedKey) {
-      setApiKey(savedKey);
-    }
-    setIsKeyLoading(false);
-  }, []);
-
-  const handleApiKeySave = () => {
-    if (tempApiKey.trim()) {
-      const trimmedKey = tempApiKey.trim();
-      localStorage.setItem('gemini-api-key', trimmedKey);
-      setApiKey(trimmedKey);
-      setError(null); // Clear previous errors
-    } else {
-        setError("API Key cannot be empty.");
-    }
-  };
-
 
   const handleImageUpload = useCallback((file: File) => {
     setImageFile(file);
@@ -48,8 +23,7 @@ export default function App(): React.ReactElement {
   }, []);
 
   const handleAnalyzeClick = async () => {
-    if (!imageFile || !apiKey) {
-      if(!apiKey) setError("API Key is missing. Please set it.");
+    if (!imageFile) {
       return;
     }
 
@@ -59,19 +33,11 @@ export default function App(): React.ReactElement {
 
     try {
       const base64Image = await fileToBase64(imageFile);
-      const result = await analyzeChart(base64Image, imageFile.type, apiKey);
+      const result = await analyzeChart(base64Image, imageFile.type);
       setAnalysis(result);
     } catch (err) {
       console.error(err);
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred during analysis.';
-      
-      if (errorMessage.toLowerCase().includes('api key not valid')) {
-        setError('The provided API Key is invalid. Please enter a correct one.');
-        localStorage.removeItem('gemini-api-key');
-        setApiKey('');
-        return;
-      }
-      
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -85,51 +51,6 @@ export default function App(): React.ReactElement {
     setError(null);
     setIsLoading(false);
   };
-  
-  const changeApiKey = () => {
-    setApiKey('');
-    setTempApiKey('');
-    localStorage.removeItem('gemini-api-key');
-  }
-
-  if (isKeyLoading) {
-    return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-        <Spinner className="w-12 h-12 text-emerald-500" />
-      </div>
-    );
-  }
-
-  if (!apiKey) {
-    return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
-          <div className="mx-auto bg-emerald-100 rounded-full w-16 h-16 flex items-center justify-center mb-4">
-            <Icon name="sparkles" className="w-8 h-8 text-emerald-600" />
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome to Chart Vision AI</h1>
-          <p className="text-slate-600 mb-6">Please enter your Google AI API key to begin analyzing charts. Your key is stored only in your browser.</p>
-          <div className="flex flex-col gap-4">
-            <input 
-              type="password"
-              value={tempApiKey}
-              onChange={(e) => setTempApiKey(e.target.value)}
-              placeholder="Enter your API key here"
-              className="w-full border border-slate-300 rounded-lg px-4 py-3 text-center focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-              aria-label="API Key Input"
-            />
-            <button
-              onClick={handleApiKeySave}
-              className="w-full flex items-center justify-center gap-2 bg-emerald-500 text-white font-semibold py-3 px-6 rounded-xl shadow-md hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300"
-            >
-              Save & Continue
-            </button>
-          </div>
-           {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-800 antialiased">
@@ -197,7 +118,6 @@ export default function App(): React.ReactElement {
 
         <footer className="text-center mt-12 text-sm text-slate-500">
           <p>&copy; 2025 Lanre² Chart Vision AI . All Rights Reserved.</p>
-           <button onClick={changeApiKey} className="mt-2 text-xs text-slate-400 hover:text-slate-600 hover:underline">Change API Key</button>
         </footer>
       </main>
     </div>
