@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface IconProps {
@@ -6,7 +5,8 @@ interface IconProps {
   className?: string;
 }
 
-export const Icon = ({ name, className = 'w-6 h-6' }: IconProps): React.ReactElement | null => {
+export const Icon: React.FC<IconProps> = ({ name, className = 'w-6 h-6' }) => {
+  // Fix: Replaced JSX.Element with React.ReactElement to resolve "Cannot find namespace 'JSX'" error.
   const icons: { [key: string]: React.ReactElement } = {
     sparkles: (
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -50,7 +50,7 @@ export const Icon = ({ name, className = 'w-6 h-6' }: IconProps): React.ReactEle
     ),
     candle: (
        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 21V3M8 16h3V8H8v8zM14 21V3m0 11h3V6h-3v8z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 4.5v15m6-15v15m-10.5-6H19.5" />
        </svg>
     ),
     compass: (
@@ -67,16 +67,10 @@ export const Icon = ({ name, className = 'w-6 h-6' }: IconProps): React.ReactEle
     ),
     activity: (
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h3l2.25 6L12 6l2.25 12h3" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h3.75m1.5 0h1.5m1.5 0h1.5m1.5 0h3.75M3.75 15h16.5M3.75 9h16.5" />
         </svg>
     ),
   };
 
-  const iconElement = icons[name];
-
-  if (!iconElement) {
-    return null;
-  }
-
-  return <div className={className}>{iconElement}</div>;
+  return <div className={className}>{icons[name] || null}</div>;
 };

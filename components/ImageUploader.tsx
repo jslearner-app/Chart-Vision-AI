@@ -8,7 +8,7 @@ interface ImageUploaderProps {
   onReset: () => void;
 }
 
-export const ImageUploader = ({ onImageUpload, imageUrl, onReset }: ImageUploaderProps): React.ReactElement => {
+export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, imageUrl, onReset }) => {
   const [isDragging, setIsDragging] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
