@@ -103,7 +103,7 @@ Based on the image, provide the following in your JSON response:
 export const analyzeChart = async (base64Image: string, mimeType: string): Promise<AnalysisResult> => {
   // --- IMPORTANT ---
   // PASTE YOUR GOOGLE AI API KEY HERE
-  const API_KEY = "YOUR_API_KEY_HERE";
+  const API_KEY = "AIzaSyC_JGlk00xlRD7BJjb1ltnT78EFg3lz4Yc";
   // -----------------
 
   if (API_KEY === "YOUR_API_KEY_HERE") {
