@@ -2,11 +2,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { AnalysisResult } from '../types';
 
-// --- PASTE YOUR API KEY HERE ---
-// Replace 'YOUR_API_KEY' with your actual Google AI API key.
-const API_KEY = "AIzaSyC_JGlk00xlRD7BJjb1ltnT78EFg3lz4Yc";
-// -----------------------------
-
 const analysisSchema = {
   type: Type.OBJECT,
   properties: {
@@ -59,20 +54,30 @@ const analysisSchema = {
 };
 
 
-const prompt = `You are an expert trading chart analyst trained to read candlestick patterns, price structure, and market sentiment from images. Analyze the provided chart screenshot and provide a structured JSON output according to the provided schema.
+const prompt = `You are an expert trading chart analyst. Your primary function is to analyze chart images and identify technical patterns with high accuracy. Analyze the provided chart screenshot and provide a structured JSON output according to the provided schema.
 
-Based on the image, provide the following:
-1.  **candlePatterns**: Identify up to 3 most recent, significant candlestick patterns. For each, specify its name, sentiment (bullish, bearish, or neutral), and your confidence level (High, Medium, or Low).
-2.  **marketContext**: Describe the overall trend visible in the chart (e.g., 'uptrend with higher highs and higher lows'). Note any significant events like a pullback to a key moving average, a reversal at a key zone, or a breakout formation.
-3.  **supportResistance**: Highlight visible support/demand and resistance/supply zones where the price has reacted multiple times.
-4.  **momentumSentiment**: Based on recent candle body sizes, wick lengths, and sequence, describe whether momentum is strengthening or fading. Provide a final, overall sentiment summary: 'Bullish', 'Bearish', 'Neutral', or 'Reversal Likely'.`;
+Your analysis must be comprehensive and strictly based on the visual evidence in the image. You have been trained to recognize a wide array of patterns. When analyzing the image, pay special attention to identifying the following patterns:
+
+**Chart Patterns:**
+- **Triangles:** Ascending, Descending, Symmetrical.
+- **Flags & Pennants:** Falling Flag (Bullish), Rising Flag (Bearish), Falling Pennant (Bullish), Rising Pennant (Bearish).
+- **Reversal Patterns:** Head & Shoulders, Inverse Head & Shoulders, Double Top (M), Double Bottom (W), Triple Top, Triple Bottom, Cup & Handle, Inverse Cup & Handle, Rounding Top, Rounding Bottom.
+- **Wedges & Broadening Formations:** Rising Wedge, Falling Wedge, Broadening Top, Broadening Bottom.
+- **Ranges:** Rectangle Formation (Bullish/Bearish).
+
+**Candlestick Patterns:**
+- **Single Candle:** Hammer, Hanging Man, Marubozu (Bullish/Bearish), Spinning Top, Doji (Dragonfly, Gravestone), Pin Bar (Bullish/Bearish).
+- **Two Candles:** Engulfing (Bullish/Bearish), Harami (Bullish/Bearish), Piercing Line, Dark Cloud Cover.
+- **Three+ Candles:** Morning Star, Evening Star, Morning Doji Star, Evening Doji Star, Three White Soldiers, Three Black Crows.
+
+Based on the image, provide the following in your JSON response:
+1.  **candlePatterns**: Identify up to 3 of the most recent and significant candlestick patterns. For each, specify its name, sentiment (bullish, bearish, or neutral), and your confidence level (High, Medium, or Low).
+2.  **marketContext**: Describe the overall trend (e.g., 'uptrend,' 'downtrend,' 'sideways consolidation'). Note any major chart patterns from the list above that define the structure.
+3.  **supportResistance**: Identify key horizontal support and resistance levels where price has reacted.
+4.  **momentumSentiment**: Analyze the most recent price action (last few candles). Describe if momentum is bullish or bearish and whether it's strengthening or weakening. Provide a final, overall sentiment summary: 'Bullish', 'Bearish', 'Neutral', or 'Reversal Likely'.`;
 
 export const analyzeChart = async (base64Image: string, mimeType: string): Promise<AnalysisResult> => {
-  if (API_KEY === 'YOUR_API_KEY') {
-    throw new Error("Please replace 'YOUR_API_KEY' in services/geminiService.ts with your actual Google AI API key.");
-  }
-
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   try {
     const imagePart = {
@@ -115,7 +120,10 @@ export const analyzeChart = async (base64Image: string, mimeType: string): Promi
     if (error instanceof Error && error.message.includes('429')) {
       throw new Error('API rate limit exceeded. Please try again later.');
     }
+    if (error instanceof Error && (error.message.toLowerCase().includes('api key not valid') || error.message.toLowerCase().includes('permission denied'))) {
+      throw new Error('Authentication error. The API key is invalid or missing required permissions.');
+    }
     // Pass the original error message if it exists, otherwise use a generic one.
-    throw new Error(error instanceof Error ? error.message : 'Failed to get a valid analysis from the AI model.');
+    throw new Error(error instanceof Error ? `AI analysis failed: ${error.message}` : 'Failed to get a valid analysis from the AI model.');
   }
 };
