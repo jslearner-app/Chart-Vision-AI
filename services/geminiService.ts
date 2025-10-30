@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import type { AnalysisResult } from '../types';
 
@@ -47,9 +48,32 @@ const analysisSchema = {
         }
       },
       required: ["description", "summary"]
+    },
+    tradeSuggestion: {
+      type: Type.OBJECT,
+      description: "A potential trade suggestion based on the analysis. This is for educational purposes.",
+      properties: {
+        strategy: {
+          type: Type.STRING,
+          description: "A brief name for the trading strategy (e.g., 'Bullish Flag Breakout')."
+        },
+        entry: {
+          type: Type.STRING,
+          description: "A suggested entry point or condition (e.g., 'Enter on a break above 155.50')."
+        },
+        stopLoss: {
+          type: Type.STRING,
+          description: "A suggested stop-loss level (e.g., 'Place stop-loss below 152.00')."
+        },
+        exit: {
+          type: Type.STRING,
+          description: "A suggested take-profit or exit target (e.g., 'Target exit near the 160.00 resistance level')."
+        }
+      },
+      required: ["strategy", "entry", "stopLoss", "exit"]
     }
   },
-  required: ["candlePatterns", "marketContext", "supportResistance", "momentumSentiment"]
+  required: ["candlePatterns", "marketContext", "supportResistance", "momentumSentiment", "tradeSuggestion"]
 };
 
 
@@ -73,12 +97,13 @@ Based on the image, provide the following in your JSON response:
 1.  **candlePatterns**: Identify up to 3 of the most recent and significant candlestick patterns. For each, specify its name, sentiment (bullish, bearish, or neutral), and your confidence level (High, Medium, or Low).
 2.  **marketContext**: Describe the overall trend (e.g., 'uptrend,' 'downtrend,' 'sideways consolidation'). Note any major chart patterns from the list above that define the structure.
 3.  **supportResistance**: Identify key horizontal support and resistance levels where price has reacted.
-4.  **momentumSentiment**: Analyze the most recent price action (last few candles). Describe if momentum is bullish or bearish and whether it's strengthening or weakening. Provide a final, overall sentiment summary: 'Bullish', 'Bearish', 'Neutral', or 'Reversal Likely'.`;
+4.  **momentumSentiment**: Analyze the most recent price action (last few candles). Describe if momentum is bullish or bearish and whether it's strengthening or weakening. Provide a final, overall sentiment summary: 'Bullish', 'Bearish', 'Neutral', or 'Reversal Likely'.
+5.  **tradeSuggestion**: Based on the overall analysis, provide a potential trading idea. Include a brief strategy name (e.g., 'Bullish Breakout'), a suggested entry point, a stop-loss level, and a potential exit/take-profit target. This is for educational purposes only and not financial advice.`;
 
 export const analyzeChart = async (base64Image: string, mimeType: string): Promise<AnalysisResult> => {
   // --- IMPORTANT ---
   // PASTE YOUR GOOGLE AI API KEY HERE
-  const API_KEY = "AIzaSyC_JGlk00xlRD7BJjb1ltnT78EFg3lz4Yc";
+  const API_KEY = "YOUR_API_KEY_HERE";
   // -----------------
 
   if (API_KEY === "YOUR_API_KEY_HERE") {
@@ -116,7 +141,8 @@ export const analyzeChart = async (base64Image: string, mimeType: string): Promi
       !parsedJson.candlePatterns ||
       !parsedJson.marketContext ||
       !parsedJson.supportResistance ||
-      !parsedJson.momentumSentiment
+      !parsedJson.momentumSentiment ||
+      !parsedJson.tradeSuggestion
     ) {
       throw new Error('Invalid response structure from API.');
     }

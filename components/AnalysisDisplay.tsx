@@ -1,5 +1,6 @@
+
 import React from 'react';
-import type { AnalysisResult, CandlePattern } from '../types';
+import type { AnalysisResult, CandlePattern, TradeSuggestion } from '../types';
 import { Icon } from './icons';
 
 interface AnalysisDisplayProps {
@@ -70,6 +71,31 @@ const CandlePatternTag = ({ pattern }: CandlePatternTagProps): React.ReactElemen
     );
 }
 
+const TradeSuggestionCard = ({ suggestion }: { suggestion: TradeSuggestion }): React.ReactElement => (
+  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+    <h3 className="text-md font-semibold text-blue-800 flex items-center gap-2 mb-3">
+      <Icon name="target" className="w-5 h-5 text-blue-500" />
+      Trade Suggestion
+    </h3>
+    <div className="text-sm text-slate-700 space-y-3">
+      <p className="text-base font-semibold text-blue-900">{suggestion.strategy}</p>
+      <div>
+        <strong className="text-slate-600">Entry:</strong>
+        <p className="ml-2">{suggestion.entry}</p>
+      </div>
+      <div>
+        <strong className="text-slate-600">Stop-Loss:</strong>
+        <p className="ml-2">{suggestion.stopLoss}</p>
+      </div>
+      <div>
+        <strong className="text-slate-600">Exit / Target:</strong>
+        <p className="ml-2">{suggestion.exit}</p>
+      </div>
+    </div>
+  </div>
+);
+
+
 export const AnalysisDisplay = ({ result }: AnalysisDisplayProps): React.ReactElement => {
     const summaryStyle = getSentimentStyle(result.momentumSentiment.summary);
 
@@ -82,6 +108,11 @@ export const AnalysisDisplay = ({ result }: AnalysisDisplayProps): React.ReactEl
                     <span>{result.momentumSentiment.summary}</span>
                 </div>
             </div>
+
+            <TradeSuggestionCard suggestion={result.tradeSuggestion} />
+             <p className="text-xs text-slate-500 italic text-center -mt-4">
+                Disclaimer: AI-generated suggestions are for educational purposes only and not financial advice.
+            </p>
 
             <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                 <AnalysisCard title="Candlestick Patterns" icon="candle">
