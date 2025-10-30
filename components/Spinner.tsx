@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface SpinnerProps {
@@ -8,7 +7,7 @@ interface SpinnerProps {
 export const Spinner = ({ className = 'w-5 h-5' }: SpinnerProps): React.ReactElement => {
   return (
     <svg
-      className={`animate-spin ${className} text-white`}
+      className={`animate-spin ${className}`}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"

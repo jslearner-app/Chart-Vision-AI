@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ImageUploader } from './components/ImageUploader';
 import { AnalysisDisplay } from './components/AnalysisDisplay';
 import { Spinner } from './components/Spinner';
@@ -13,6 +13,38 @@ export default function App(): React.ReactElement {
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const [isKeyReady, setIsKeyReady] = useState<boolean>(false);
+  const [checkingKey, setCheckingKey] = useState<boolean>(true);
+
+  useEffect(() => {
+    const checkApiKey = async () => {
+      try {
+        if (window.aistudio && (await window.aistudio.hasSelectedApiKey())) {
+          setIsKeyReady(true);
+        }
+      } catch (e) {
+        console.error("Error checking for API key:", e);
+      } finally {
+        setCheckingKey(false);
+      }
+    };
+    checkApiKey();
+  }, []);
+
+  const handleSelectKey = async () => {
+    try {
+      if (window.aistudio) {
+        await window.aistudio.openSelectKey();
+        // Assume success and update UI immediately as per guidelines
+        setIsKeyReady(true); 
+      }
+    } catch (e) {
+      console.error("Error opening API key selection:", e);
+      setError("Failed to open API key selection. Please try again.");
+    }
+  };
+
 
   const handleImageUpload = useCallback((file: File) => {
     setImageFile(file);
@@ -36,6 +68,20 @@ export default function App(): React.ReactElement {
     } catch (err) {
       console.error(err);
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred during analysis.';
+      
+      if (errorMessage.includes('Requested entity was not found')) {
+        setError('Your API key may be invalid. Please select a new one.');
+        setIsKeyReady(false); // Reset to prompt for key selection
+        return;
+      }
+
+      // Handle the specific error from the screenshot
+      if (errorMessage.includes('API Key must be set') || errorMessage.includes('API key not valid')) {
+         setError('An API Key must be set. Please select one to continue.');
+         setIsKeyReady(false);
+         return;
+      }
+      
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -49,6 +95,38 @@ export default function App(): React.ReactElement {
     setError(null);
     setIsLoading(false);
   };
+
+  if (checkingKey) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+        <Spinner className="w-12 h-12 text-emerald-500" />
+      </div>
+    );
+  }
+
+  if (!isKeyReady) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
+          <div className="mx-auto bg-emerald-100 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+            <Icon name="sparkles" className="w-8 h-8 text-emerald-600" />
+          </div>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome to Chart Vision AI</h1>
+          <p className="text-slate-600 mb-6">To perform analysis, this application requires a Google AI API key.</p>
+          <button
+            onClick={handleSelectKey}
+            className="w-full flex items-center justify-center gap-2 bg-emerald-500 text-white font-semibold py-3 px-6 rounded-xl shadow-md hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300"
+          >
+            Select API Key
+          </button>
+           <p className="text-xs text-slate-500 mt-4">
+            For more details on billing, please refer to the <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline font-medium">official documentation</a>.
+          </p>
+           {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-800 antialiased">
@@ -72,7 +150,7 @@ export default function App(): React.ReactElement {
             >
               {isLoading ? (
                 <>
-                  <Spinner />
+                  <Spinner className="text-white" />
                   Analyzing...
                 </>
               ) : (
@@ -91,7 +169,7 @@ export default function App(): React.ReactElement {
             </h2>
             {isLoading && (
               <div className="flex flex-col items-center justify-center h-full text-slate-500 pt-16">
-                <Spinner className="w-12 h-12 mb-4" />
+                <Spinner className="w-12 h-12 mb-4 text-slate-500" />
                 <p className="text-lg font-medium">Analyzing chart...</p>
                 <p className="text-sm">This may take a moment.</p>
               </div>
