@@ -76,8 +76,12 @@ Based on the image, provide the following in your JSON response:
 3.  **supportResistance**: Identify key horizontal support and resistance levels where price has reacted.
 4.  **momentumSentiment**: Analyze the most recent price action (last few candles). Describe if momentum is bullish or bearish and whether it's strengthening or weakening. Provide a final, overall sentiment summary: 'Bullish', 'Bearish', 'Neutral', or 'Reversal Likely'.`;
 
-export const analyzeChart = async (base64Image: string, mimeType: string): Promise<AnalysisResult> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+export const analyzeChart = async (base64Image: string, mimeType: string, apiKey: string): Promise<AnalysisResult> => {
+  if (!apiKey) {
+    throw new Error("An API Key must be provided for analysis.");
+  }
+  
+  const ai = new GoogleGenAI({ apiKey: apiKey });
 
   try {
     const imagePart = {
@@ -121,7 +125,7 @@ export const analyzeChart = async (base64Image: string, mimeType: string): Promi
       throw new Error('API rate limit exceeded. Please try again later.');
     }
     if (error instanceof Error && (error.message.toLowerCase().includes('api key not valid') || error.message.toLowerCase().includes('permission denied'))) {
-      throw new Error('Authentication error. The API key is invalid or missing required permissions.');
+      throw new Error('API key not valid. Please pass a valid API key.');
     }
     // Pass the original error message if it exists, otherwise use a generic one.
     throw new Error(error instanceof Error ? `AI analysis failed: ${error.message}` : 'Failed to get a valid analysis from the AI model.');

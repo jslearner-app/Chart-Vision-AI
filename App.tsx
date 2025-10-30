@@ -14,34 +14,27 @@ export default function App(): React.ReactElement {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   
-  const [isKeyReady, setIsKeyReady] = useState<boolean>(false);
-  const [checkingKey, setCheckingKey] = useState<boolean>(true);
+  const [apiKey, setApiKey] = useState<string>('');
+  const [tempApiKey, setTempApiKey] = useState<string>('');
+  const [isKeyLoading, setIsKeyLoading] = useState<boolean>(true);
+
 
   useEffect(() => {
-    const checkApiKey = async () => {
-      try {
-        if (window.aistudio && (await window.aistudio.hasSelectedApiKey())) {
-          setIsKeyReady(true);
-        }
-      } catch (e) {
-        console.error("Error checking for API key:", e);
-      } finally {
-        setCheckingKey(false);
-      }
-    };
-    checkApiKey();
+    const savedKey = localStorage.getItem('gemini-api-key');
+    if (savedKey) {
+      setApiKey(savedKey);
+    }
+    setIsKeyLoading(false);
   }, []);
 
-  const handleSelectKey = async () => {
-    try {
-      if (window.aistudio) {
-        await window.aistudio.openSelectKey();
-        // Assume success and update UI immediately as per guidelines
-        setIsKeyReady(true); 
-      }
-    } catch (e) {
-      console.error("Error opening API key selection:", e);
-      setError("Failed to open API key selection. Please try again.");
+  const handleApiKeySave = () => {
+    if (tempApiKey.trim()) {
+      const trimmedKey = tempApiKey.trim();
+      localStorage.setItem('gemini-api-key', trimmedKey);
+      setApiKey(trimmedKey);
+      setError(null); // Clear previous errors
+    } else {
+        setError("API Key cannot be empty.");
     }
   };
 
@@ -55,7 +48,10 @@ export default function App(): React.ReactElement {
   }, []);
 
   const handleAnalyzeClick = async () => {
-    if (!imageFile) return;
+    if (!imageFile || !apiKey) {
+      if(!apiKey) setError("API Key is missing. Please set it.");
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -63,23 +59,17 @@ export default function App(): React.ReactElement {
 
     try {
       const base64Image = await fileToBase64(imageFile);
-      const result = await analyzeChart(base64Image, imageFile.type);
+      const result = await analyzeChart(base64Image, imageFile.type, apiKey);
       setAnalysis(result);
     } catch (err) {
       console.error(err);
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred during analysis.';
       
-      if (errorMessage.includes('Requested entity was not found')) {
-        setError('Your API key may be invalid. Please select a new one.');
-        setIsKeyReady(false); // Reset to prompt for key selection
+      if (errorMessage.toLowerCase().includes('api key not valid')) {
+        setError('The provided API Key is invalid. Please enter a correct one.');
+        localStorage.removeItem('gemini-api-key');
+        setApiKey('');
         return;
-      }
-
-      // Handle the specific error from the screenshot
-      if (errorMessage.includes('API Key must be set') || errorMessage.includes('API key not valid')) {
-         setError('An API Key must be set. Please select one to continue.');
-         setIsKeyReady(false);
-         return;
       }
       
       setError(errorMessage);
@@ -95,8 +85,14 @@ export default function App(): React.ReactElement {
     setError(null);
     setIsLoading(false);
   };
+  
+  const changeApiKey = () => {
+    setApiKey('');
+    setTempApiKey('');
+    localStorage.removeItem('gemini-api-key');
+  }
 
-  if (checkingKey) {
+  if (isKeyLoading) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center">
         <Spinner className="w-12 h-12 text-emerald-500" />
@@ -104,7 +100,7 @@ export default function App(): React.ReactElement {
     );
   }
 
-  if (!isKeyReady) {
+  if (!apiKey) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
         <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
@@ -112,16 +108,23 @@ export default function App(): React.ReactElement {
             <Icon name="sparkles" className="w-8 h-8 text-emerald-600" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome to Chart Vision AI</h1>
-          <p className="text-slate-600 mb-6">To perform analysis, this application requires a Google AI API key.</p>
-          <button
-            onClick={handleSelectKey}
-            className="w-full flex items-center justify-center gap-2 bg-emerald-500 text-white font-semibold py-3 px-6 rounded-xl shadow-md hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300"
-          >
-            Select API Key
-          </button>
-           <p className="text-xs text-slate-500 mt-4">
-            For more details on billing, please refer to the <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline font-medium">official documentation</a>.
-          </p>
+          <p className="text-slate-600 mb-6">Please enter your Google AI API key to begin analyzing charts. Your key is stored only in your browser.</p>
+          <div className="flex flex-col gap-4">
+            <input 
+              type="password"
+              value={tempApiKey}
+              onChange={(e) => setTempApiKey(e.target.value)}
+              placeholder="Enter your API key here"
+              className="w-full border border-slate-300 rounded-lg px-4 py-3 text-center focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+              aria-label="API Key Input"
+            />
+            <button
+              onClick={handleApiKeySave}
+              className="w-full flex items-center justify-center gap-2 bg-emerald-500 text-white font-semibold py-3 px-6 rounded-xl shadow-md hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300"
+            >
+              Save & Continue
+            </button>
+          </div>
            {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
         </div>
       </div>
@@ -194,6 +197,7 @@ export default function App(): React.ReactElement {
 
         <footer className="text-center mt-12 text-sm text-slate-500">
           <p>&copy; 2025 Lanre² Chart Vision AI . All Rights Reserved.</p>
+           <button onClick={changeApiKey} className="mt-2 text-xs text-slate-400 hover:text-slate-600 hover:underline">Change API Key</button>
         </footer>
       </main>
     </div>
